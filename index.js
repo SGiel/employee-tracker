@@ -55,7 +55,7 @@ const addRoleQuestions = [
             if (idInput.match(/^[0-9]+$/) && idInput.length > 0) {
                 return true;
             } else {
-                console.log("Invalid entry. Please enter a number with no commas, $ or other characters.");
+                console.log("Invalid entry. Please enter the salary with no commas, $ or other non-numeric characters.");
                 return false;
             }
         }
@@ -71,7 +71,7 @@ const addRoleQuestions = [
     }
 ];
 
-const employeeQuestions = [
+const addEmployeeQuestions = [
     {
         type: 'input',
         name: 'employeeFirstName',
@@ -125,30 +125,131 @@ const employeeQuestions = [
     }
 ];
 
+const updateEmployeeRoleQuestions = [
+    {
+        type: 'input',
+        name: 'Employee id',
+        message: 'Enter employee id',
+        validate: idInput => {
+            if (idInput.match(/^[0-9]+$/) && idInput.length > 0) {
+                return true;
+            } else {
+                console.log("Invalid entry. Please enter the Employee ID.");
+                return false;
+            }
+        },
+    },
+    {
+        type: 'list',
+        name: 'role',
+        message: 'Please choose the new role for the employee:',
+        choices: ['Sales Lead',
+            'Sales Person',
+            'Lead Engineer',
+            'Software Engineer',
+            'Accountant',
+            'Legal Team Lead',
+            'Lawyer']
+    }
+];
+
+const addDepartment = () => {
+    return inquirer.prompt(addDepartmentQuestion)
+    .then(answer => { 
+        console.log("in addDepartment", answer)
+        promptUser()
+        return; // will need to actually return new department array
+
+        // if (`${answer.id}` === "???") {
+        //     return inquirer.prompt(engineerQuestions)
+        //     //promptEngineer()
+        //         .then(EngineerAnswers => {
+        //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
+        //             return buildTeam(team)
+        //         })
+    })
+};
+
+const addEmployee = () => {
+    return inquirer.prompt(addEmployeeQuestions)
+    .then(answer => { 
+        console.log("in addEmployees", answer)
+        promptUser()
+        return; // will need to actually return new employees array
+
+        // if (`${answer.id}` === "???") {
+        //     return inquirer.prompt(engineerQuestions)
+        //     //promptEngineer()
+        //         .then(EngineerAnswers => {
+        //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
+        //             return buildTeam(team)
+        //         })
+    })
+};
+
+const addRole = () => {
+    return inquirer.prompt(addRoleQuestions)
+    .then(answer => { 
+        console.log("in addRole", answer)
+        promptUser()
+        return; // will need to actually return new roles array
+        // change the role_id on the employee provided by employee id???
+
+        // if (`${answer.id}` === "???") {
+        //     return inquirer.prompt(engineerQuestions)
+        //     //promptEngineer()
+        //         .then(EngineerAnswers => {
+        //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
+        //             return buildTeam(team)
+        //         })
+    })
+};
+
+
+const updateEmployeeRole = () => {
+    return inquirer.prompt(updateEmployeeRoleQuestions)
+    .then(answer => { 
+        console.log("in updateEmployeeRole", answer)
+        promptUser()
+        return; // will need to actually return updated employee info
+        // change the role_id on the employee provided by employee id???
+
+        // if (`${answer.id}` === "???") {
+        //     return inquirer.prompt(engineerQuestions)
+        //     //promptEngineer()
+        //         .then(EngineerAnswers => {
+        //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
+        //             return buildTeam(team)
+        //         })
+        
+    })
+};
+
+
 const promptUser = () => {
     return inquirer.prompt(startQuestion)
     .then(answer => { 
         if (`${answer.startQuestion}` === "View All Departments") {
             console.log("will view all Departments here");
-            return promptUser()
+            promptUser()
         } else if (`${answer.startQuestion}` === "View All Roles") {
             console.log("will view all Roles here");
-            return promptUser()
+            promptUser()
         } else if (`${answer.startQuestion}` === "View All Employees") {
             console.log("will view all Employees here");
-            return promptUser()
+            promptUser()
         } else if (`${answer.startQuestion}` === "Add a Department") {
             console.log("will add a Department here");
-            return promptUser()
+            addDepartment()
         } else if (`${answer.startQuestion}` === "Add a Role") {
             console.log("will add a Role here");
-            return promptUser()
+            addRole()
         } else if (`${answer.startQuestion}` === "Add an Employee") {
             console.log("will add an Employee here");
-            return promptUser()
+            addEmployee()
         } else if (`${answer.startQuestion}` === "Update an Employee Role") {
-            console.log("will add an Employee Role here");
-            return promptUser()
+            console.log("will updata an Employee Role here");
+            updateEmployeeRole()
         } else if (`${answer.startQuestion}` === "Exit Employee Tracker") {
             console.log("Thank you for using Employee Tracker! Goodbye.");
             return;
@@ -161,51 +262,6 @@ promptUser()
         console.log(err);
     });
 
-//         if (`${answer.teamMember}` === "View All Departments") {
-//             return inquirer.prompt(startQuestion)
-//         } else if (`${answer.teamMember}` === "Intern") {
-//             return inquirer.prompt(internQuestions)
-//             //promptIntern()
-//                 .then(InternAnswers => {
-//                     team.push(new Intern(`${InternAnswers.employeeName}`, `${InternAnswers.id}`, `${InternAnswers.email}`, `${InternAnswers.school}`));
-//                     return buildTeam(team)
-//                 })
-//         } else return team;
-//     })
-// };
-
-
-// choices: ['View All Departments',
-// 'View All Roles',
-// 'View All Employees',
-// 'Add a Department',
-// 'Add a Role',
-// 'Add an Employee',
-// 'Update an Employee Role',
-// 'Exit Employee Tracker']
-
-
-// const trackEmployee = (team) => {
-//     return inquirer.prompt(buildTeamQuestion)
-//     //promptBuildTeam()
-//     .then(answer => { 
-//         if (`${answer.teamMember}` === "Engineer") {
-//             return inquirer.prompt(engineerQuestions)
-//             //promptEngineer()
-//                 .then(EngineerAnswers => {
-//                     team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
-//                     return buildTeam(team)
-//                 })
-//         } else if (`${answer.teamMember}` === "Intern") {
-//             return inquirer.prompt(internQuestions)
-//             //promptIntern()
-//                 .then(InternAnswers => {
-//                     team.push(new Intern(`${InternAnswers.employeeName}`, `${InternAnswers.id}`, `${InternAnswers.email}`, `${InternAnswers.school}`));
-//                     return buildTeam(team)
-//                 })
-//         } else return team;
-//     })
-// };
 
 // const writeFile = (fileName, fileContent) => {
 //     return new Promise((resolve, reject) => {
