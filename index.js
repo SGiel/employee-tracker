@@ -1,5 +1,8 @@
-const fs = require('fs');
+const connection = require('./db/connection');
+const employee_db = require('./db/');
 const inquirer = require('inquirer');
+
+let Employee_db = new employee_db(connection);
 
 const startQuestion = [
     {
@@ -156,6 +159,7 @@ const updateEmployeeRoleQuestions = [
 const addDepartment = () => {
     return inquirer.prompt(addDepartmentQuestion)
     .then(answer => { 
+        employee_db.showDepartments();
         console.log("in addDepartment", answer)
         promptUser()
         return; // will need to actually return new department array
@@ -230,7 +234,7 @@ const promptUser = () => {
     return inquirer.prompt(startQuestion)
     .then(answer => { 
         if (`${answer.startQuestion}` === "View All Departments") {
-            console.log("will view all Departments here");
+            Employee_db.showDepartments()
             promptUser()
         } else if (`${answer.startQuestion}` === "View All Roles") {
             console.log("will view all Roles here");
