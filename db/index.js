@@ -10,13 +10,55 @@ class employee_db {
         return this.connection.promise().query(
             'SELECT * FROM departments'
         )
-        .then (([data]) => {
-            console.log(([data]));
-        })
         .catch(err => {
             throw error;
         })
-    };
+    }
+
+    showRoles() {
+        return this.connection.promise().query(
+            'SELECT * FROM roles'
+        )
+        .catch(err => {
+            throw error;
+        })
+    }
+
+    showEmployees() {
+        return this.connection.promise().query(
+            'SELECT * FROM employees'
+        )
+        .catch(err => {
+            throw error;
+        })
+    }
+
+    addDepartment(department) {
+        return this.connection.promise().query(
+            'INSERT INTO departments SET ?',
+            {
+                name: department
+            }
+        )
+        .catch(err => {
+            throw error;
+        })
+    }
+
+    addRole(role, salary, department_id) {
+        return this.connection.promise().query(
+            'INSERT INTO departments SET ?',
+            {
+                title: role,
+                salary: salary,
+                department_id: department_id
+            }
+        )
+        .catch(err => {
+            throw error;
+        })
+    }
+
 }
 
-module.exports = employee_db;
+module.exports = new employee_db(connection);

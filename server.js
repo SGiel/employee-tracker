@@ -1,8 +1,5 @@
-const connection = require('./db/connection');
-const employee_db = require('./db/');
-const inquirer = require('inquirer');
-
-let Employee_db = new employee_db(connection);
+const Employee_db = require('./db/');
+const {prompt} = require('inquirer');
 
 const startQuestion = [
     {
@@ -156,33 +153,66 @@ const updateEmployeeRoleQuestions = [
     }
 ];
 
-const addDepartment = () => {
-    return inquirer.prompt(addDepartmentQuestion)
-    .then(answer => { 
-        employee_db.showDepartments();
-        console.log("in addDepartment", answer)
+const viewDepartments = () => {
+    Employee_db.showDepartments()
+    .then (([data]) => {
+        const departments = data.map(department => department.name)
+        console.log('\n\nThe Departments\n');
+        departments.forEach(department => console.log(department));
+        console.log('\n')
+    })
+    .then ( () => {
         promptUser()
-        return; // will need to actually return new department array
+    })
+}
 
-        // if (`${answer.id}` === "???") {
-        //     return inquirer.prompt(engineerQuestions)
-        //     //promptEngineer()
-        //         .then(EngineerAnswers => {
-        //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
-        //             return buildTeam(team)
-        //         })
+const viewRoles = () => {
+    Employee_db.showRoles()
+    .then (([data]) => {
+        const roles = data.map(role => role.title)
+        console.log('\n\nThe Roles\n');
+        roles.forEach(role => console.log(role));
+        console.log('\n')
+    })
+    .then ( () => {
+        promptUser()
+    })
+}
+
+const viewEmployees = () => {
+    Employee_db.showEmployees()
+    .then (([data]) => {
+        const employees = data.map(employee => employee.first_name + ' ' + employee.last_name)
+        console.log('\n\nThe Employees\n');
+        employees.forEach(employee => console.log(employee));
+        console.log('\n')
+    })
+    .then ( () => {
+        promptUser()
+    })
+}
+
+const addDepartment = () => {
+    return prompt(addDepartmentQuestion)
+    .then((res) => { 
+        console.log(res.departmentName)
+        Employee_db.addDepartment(res.departmentName)
+        console.log('\n\nThe new Department: ' + `${res.departmentName}` + ' has been added\n');
+    })
+    .then ( () => {
+        promptUser()
     })
 };
 
 const addEmployee = () => {
-    return inquirer.prompt(addEmployeeQuestions)
+    return prompt(addEmployeeQuestions)
     .then(answer => { 
         console.log("in addEmployees", answer)
         promptUser()
         return; // will need to actually return new employees array
 
         // if (`${answer.id}` === "???") {
-        //     return inquirer.prompt(engineerQuestions)
+        //     return prompt(engineerQuestions)
         //     //promptEngineer()
         //         .then(EngineerAnswers => {
         //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
@@ -192,7 +222,7 @@ const addEmployee = () => {
 };
 
 const addRole = () => {
-    return inquirer.prompt(addRoleQuestions)
+    return prompt(addRoleQuestions)
     .then(answer => { 
         console.log("in addRole", answer)
         promptUser()
@@ -200,7 +230,7 @@ const addRole = () => {
         // change the role_id on the employee provided by employee id???
 
         // if (`${answer.id}` === "???") {
-        //     return inquirer.prompt(engineerQuestions)
+        //     return prompt(engineerQuestions)
         //     //promptEngineer()
         //         .then(EngineerAnswers => {
         //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
@@ -219,7 +249,7 @@ const updateEmployeeRole = () => {
         // change the role_id on the employee provided by employee id???
 
         // if (`${answer.id}` === "???") {
-        //     return inquirer.prompt(engineerQuestions)
+        //     return prompt(engineerQuestions)
         //     //promptEngineer()
         //         .then(EngineerAnswers => {
         //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
@@ -230,32 +260,30 @@ const updateEmployeeRole = () => {
 };
 
 
+
 const promptUser = () => {
-    return inquirer.prompt(startQuestion)
+    return prompt(startQuestion)
     .then(answer => { 
-        if (`${answer.startQuestion}` === "View All Departments") {
-            Employee_db.showDepartments()
-            promptUser()
-        } else if (`${answer.startQuestion}` === "View All Roles") {
-            console.log("will view all Roles here");
-            promptUser()
-        } else if (`${answer.startQuestion}` === "View All Employees") {
-            console.log("will view all Employees here");
-            promptUser()
-        } else if (`${answer.startQuestion}` === "Add a Department") {
-            console.log("will add a Department here");
+        if (`${answer.startQuestion}` === 'View All Departments') {
+            viewDepartments()
+        } else if (`${answer.startQuestion}` === 'View All Roles') {
+            viewRoles()
+        } else if (`${answer.startQuestion}` === 'View All Employees') {
+            viewEmployees()
+        } else if (`${answer.startQuestion}` === 'Add a Department') {
             addDepartment()
-        } else if (`${answer.startQuestion}` === "Add a Role") {
-            console.log("will add a Role here");
+        } else if (`${answer.startQuestion}` === 'Add a Role') {
+            console.log('will add a Role here');
             addRole()
-        } else if (`${answer.startQuestion}` === "Add an Employee") {
-            console.log("will add an Employee here");
+        } else if (`${answer.startQuestion}` === 'Add an Employee') {
+            console.log('will add an Employee here');
             addEmployee()
-        } else if (`${answer.startQuestion}` === "Update an Employee Role") {
-            console.log("will updata an Employee Role here");
+        } else if (`${answer.startQuestion}` === 'Update an Employee Role') {
+            console.log('will updata an Employee Role here');
             updateEmployeeRole()
-        } else if (`${answer.startQuestion}` === "Exit Employee Tracker") {
-            console.log("Thank you for using Employee Tracker! Goodbye.");
+        } else if (`${answer.startQuestion}` === 'Exit Employee Tracker') {
+            console.log('\nThank you for using Employee Tracker! Goodbye.\n');
+            Employee_db.connection.end();
             return;
         }
     })
@@ -267,24 +295,6 @@ promptUser()
     });
 
 
-// const writeFile = (fileName, fileContent) => {
-//     return new Promise((resolve, reject) => {
-//       fs.writeFile(fileName, fileContent, err => {
-//         // if there's an error, reject the Promise and send the error to the Promise's `.catch()` method
-//         if (err) {
-//           reject(err);
-//           // return out of the function here to make sure the Promise doesn't accidentally execute the resolve() function as well
-//           return;
-//         }
-  
-//         // if everything went well, resolve the Promise and send the successful data to the `.then()` method
-//         resolve({
-//           ok: true,
-//           message: 'Open index.html in your browser to see employee files!'
-//         });
-//       });
-//     });
-// };
 
 
 
