@@ -10,10 +10,14 @@ const startQuestion = [
         choices: ['View All Departments',
             'View All Roles',
             'View All Employees',
+            'View Employees by Department',
             'Add a Department',
             'Add a Role',
             'Add an Employee',
             'Update an Employee Role',
+            'Update an Employee Manager',
+            'Delete a Department',
+            'Delete a Role',
             'Delete an Employee',
             'Exit Employee Tracker']
     }
@@ -34,123 +38,6 @@ const addDepartmentQuestion = [
         },
     }
 ]
-
-const addRoleQuestions = [
-    {
-        type: 'input',
-        name: 'roleName',
-        message: 'Please enter a new role:',
-        validate: nameInput => {
-            if (nameInput) {
-              return true;
-            } else {
-              console.log("Please enter a role.");
-              return false;
-            }
-        },
-    },
-    {
-        type: 'input',
-        name: 'salary',
-        message: 'Please enter the salary for the role:',
-        validate: idInput => {
-            if (idInput.match(/^[0-9]+$/) && idInput.length > 0) {
-                return true;
-            } else {
-                console.log("Invalid entry. Please enter the salary with no commas, $ or other non-numeric characters.");
-                return false;
-            }
-        }
-    },
-    {
-        type: 'list',
-        name: 'department',
-        message: 'Please choose the department for the role:',
-        choices: ['department1', 'department2']
-    }
-];
-
-const addEmployeeQuestions = [
-    {
-        type: 'input',
-        name: 'employeeFirstName',
-        message: 'First name:',
-        validate: nameInput => {
-            if (nameInput) {
-              return true;
-            } else {
-              console.log("Please enter the first name:");
-              return false;
-            }
-        },
-    },
-    {
-        type: 'input',
-        name: 'employeeLasttName',
-        message: 'Last name:',
-        validate: nameInput => {
-            if (nameInput) {
-              return true;
-            } else {
-              console.log("Please enter the last name:");
-              return false;
-            }
-        },
-    },
-    {
-        type: 'list',
-        name: 'role',
-        message: 'Please choose the role for the employee:',
-        choices: ['Sales Lead',
-            'Sales Person',
-            'Lead Engineer',
-            'Software Engineer',
-            'Accountant',
-            'Legal Team Lead',
-            'Lawyer']
-    },
-    {
-        type: 'input',
-        name: 'managerName',
-        message: "Please enter the manager's name:",
-        validate: nameInput => {
-            if (nameInput) {
-              return true;
-            } else {
-              console.log("Please enter the manager's name.");
-              return false;
-            }
-        },
-    }
-];
-
-const updateEmployeeRoleQuestions = [
-    {
-        type: 'input',
-        name: 'Employee id',
-        message: 'Enter employee id',
-        validate: idInput => {
-            if (idInput.match(/^[0-9]+$/) && idInput.length > 0) {
-                return true;
-            } else {
-                console.log("Invalid entry. Please enter the Employee ID.");
-                return false;
-            }
-        },
-    },
-    {
-        type: 'list',
-        name: 'role',
-        message: 'Please choose the new role for the employee:',
-        choices: `[['Sales Lead',
-            'Sales Person',
-            'Lead Engineer',
-            'Software Engineer',
-            'Accountant',
-            'Legal Team Lead',
-            'Lawyer']]`
-    }
-];
 
 const viewDepartments = () => {
     Employee_db.showDepartments()
@@ -206,6 +93,38 @@ const viewEmployees = () => {
         promptUser()
     })
 }
+const viewEmployeesByDepartment = () => {
+    Employee_db.showDepartments()
+    .then (([data]) => {
+        const departments = data;
+        return departments;
+    })
+    .then ( (departments) => {
+        return prompt(
+            [
+                {
+                    type: 'list',
+                    name: 'department',
+                    message: "Please choose the department where you would like to view employees:",
+                    choices: departments.map(department => ({value: department.id, name: department.department}))
+                }
+            ] 
+        )
+    })
+    .then(answers => { 
+        console.log("answers", answers)
+        Employee_db.showDepartmentEmployees(parseInt(answers.department))
+        .then (([data]) => {
+            const departmentEmployees = data;
+            console.log('\n')
+            console.table(departmentEmployees);
+            console.log('\n')
+        })   
+   })
+   .then ( () => {
+       promptUser()
+   })
+};
 
 const addDepartment = () => {
     return prompt(addDepartmentQuestion)
@@ -263,7 +182,6 @@ const addRole = () => {
         )
     })
     .then(answers => { 
-         console.log(answers.roleName, parseInt(answers.salary), parseInt(answers.department))
          Employee_db.addRole(answers.roleName, parseInt(answers.salary), parseInt(answers.department))
          console.log('\n\nThe new role: ' + `${answers.roleName}` + ' has been added \n');
     })
@@ -396,12 +314,126 @@ const updateEmployeeRole = () => {
             )
         })
         .then(answers => { 
-            Employee_db.updateEmployee(parseInt(answers.employee), parseInt(answers.role))
+            Employee_db.updateEmployeeRole(parseInt(answers.employee), parseInt(answers.role))
             console.log('\n\nThe employee role is updated \n');
        })
        .then ( () => {
           promptUser()
         })
+    })
+};
+
+const updateEmployeeManager = () => {
+    Employee_db.showEmployees()
+    .then (([data]) => {
+        let ids = [];
+        if (data) {
+            ids.employees = data.map(employee => ({
+                value: employee.id,
+                name: employee.first_name + ' ' + employee.last_name
+            }));
+            ids.managers = data.map(manager => ({
+                value: manager.id,
+                name: manager.first_name + ' ' + manager.last_name
+            }));
+            ids.managers.push({
+                value: 0,
+                name: 'No manager for this employee'
+            })
+        }
+        return ids;
+    })
+    .then (ids => {
+        return prompt(
+            [
+                {
+                    type: 'list',
+                    name: 'employee',
+                    message: "Please choose the employee you would like to update:",
+                    choices: ids.employees
+                },
+                {
+                    type: 'list',
+                    name: 'manager',
+                    message: "Please choose the manager for the employee:",
+                    choices: ids.managers
+                }
+            ]
+        )
+    })
+    .then(answers => { 
+        console.log(answers)
+        Employee_db.updateEmployeeManager(parseInt(answers.employee), parseInt(answers.manager))
+        console.log('\n\nThe employee manager is updated \n');
+    })
+    .then ( () => {
+        promptUser()
+    })
+};
+
+const deleteDepartment = () => {
+    Employee_db.showDepartments()
+    .then (([data]) => {
+        let departmentArray = [];
+        if (data) {
+            departmentArray = data.map(department => ({
+                value: department.id,
+                name: department.department
+            }));
+        }
+        return departmentArray;
+    })
+    .then (departments => {
+        return prompt(
+            [
+                {
+                    type: 'list',
+                    name: 'department',
+                    message: "Please choose the department you would like to delete:",
+                    choices: departments
+                }
+            ]
+        )
+    })
+    .then(answers => { 
+        Employee_db.deleteDepartment(parseInt(answers.department))
+        console.log('\n\nThe department has been deleted. \n');
+    })
+    .then ( () => {
+        promptUser()
+    })
+};
+
+const deleteRole = () => {
+    Employee_db.showRoles()
+    .then (([data]) => {
+        let roleArray = [];
+        if (data) {
+            roleArray = data.map(role => ({
+                value: role.id,
+                name: role.title
+            }));
+        }
+        return roleArray;
+    })
+    .then (roles => {
+        return prompt(
+            [
+                {
+                    type: 'list',
+                    name: 'role',
+                    message: "Please choose the role you would like to delete:",
+                    choices: roles
+                }
+            ]
+        )
+    })
+    .then(answers => { 
+        Employee_db.deleteRole(parseInt(answers.role))
+        console.log('\n\nThe role has been deleted. \n');
+    })
+    .then ( () => {
+        promptUser()
     })
 };
 
@@ -448,6 +480,8 @@ const promptUser = () => {
             viewRoles()
         } else if (`${answer.startQuestion}` === 'View All Employees') {
             viewEmployees()
+        } else if (`${answer.startQuestion}` === 'View Employees by Department') {
+            viewEmployeesByDepartment()
         } else if (`${answer.startQuestion}` === 'Add a Department') {
             addDepartment()
         } else if (`${answer.startQuestion}` === 'Add a Role') {
@@ -456,6 +490,12 @@ const promptUser = () => {
             addEmployee()
         } else if (`${answer.startQuestion}` === 'Update an Employee Role') {
             updateEmployeeRole()
+        } else if (`${answer.startQuestion}` === 'Update an Employee Manager') {
+            updateEmployeeManager()
+        } else if (`${answer.startQuestion}` === 'Delete a Department') {
+            deleteDepartment()
+        } else if (`${answer.startQuestion}` === 'Delete a Role') {
+            deleteRole()
         } else if (`${answer.startQuestion}` === 'Delete an Employee') {
             deleteEmployee()
         } else if (`${answer.startQuestion}` === 'Exit Employee Tracker') {

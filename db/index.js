@@ -50,6 +50,19 @@ class employee_db {
         )
     }
 
+    showDepartmentEmployees(departmentID) {
+        return this.connection.promise().query(
+            `SELECT name as department, employees.id, first_name, last_name, title
+            FROM employees 
+            LEFT JOIN roles ON employees.role_id = roles.id
+            LEFT JOIN departments ON roles.department_id = departments.id
+            WHERE ?`,
+            {
+                department_id: departmentID
+            }
+        )
+    }
+
     addDepartment(department) {
         return this.connection.promise().query(
             'INSERT INTO departments SET ?',
@@ -76,14 +89,43 @@ class employee_db {
         })
     }
 
+    deleteDepartment(departmentID) {
+        return this.connection.promise().query(
+            'DELETE FROM departments WHERE ?',
+            {
+                id: departmentID
+            }
+        )
+        .catch(err => {
+            throw error;
+        })
+    }
+
+    deleteRole(roleID) {
+        return this.connection.promise().query(
+            'DELETE FROM roles WHERE ?',
+            {
+                id: roleID
+            }
+        )
+        .catch(err => {
+            throw error;
+        })
+    }
+
+
     addEmployee(firstName, lastName, roleID, managerID) {
+        let manager_id;
+        if (!managerID === 0) {
+            manager_id = managerID
+        }
         return this.connection.promise().query(
             'INSERT INTO employees SET ?',
             {
                 first_name: firstName,
                 last_name: lastName,
                 role_id: roleID,
-                manager_id: managerID
+                manager_id: manager_id
             }
         )
         .catch(err => {
@@ -104,7 +146,7 @@ class employee_db {
     }
 
     // updates an Employees role
-    updateEmployee(employee_id, roleID) {
+    updateEmployeeRole(employee_id, roleID) {
         return this.connection.promise().query(
             'UPDATE employees SET ? WHERE ?',
             [
@@ -121,6 +163,30 @@ class employee_db {
         })
     }
 
+    // updates an Employees role
+    updateEmployeeManager(employee_id, managerID) {
+        let manager_id;
+        if (!managerID === 0) {
+            manager_id = managerID
+        }
+        return this.connection.promise().query(
+            'UPDATE employees SET ? WHERE ?',
+            [
+                {
+                    manager_id: manager_id
+                },
+                {
+                    id: employee_id
+                }
+            ]
+        )
+        .catch(err => {
+            throw error;
+        })
+    }
+
+
 }
+
 
 module.exports = new employee_db(connection);
