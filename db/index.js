@@ -118,7 +118,7 @@ class employee_db {
 
     addEmployee(firstName, lastName, roleID, managerID) {
         let manager_id;
-        if (!managerID === 0) {
+        if (!(managerID === 0)) {
             manager_id = managerID
         }
         return this.connection.promise().query(

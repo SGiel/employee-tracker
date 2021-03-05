@@ -264,7 +264,6 @@ const viewEmployeesByDepartment = () => {
             return
         })  
         .then ( () => {
-            console.clear()
             promptUser()
         })
    })
@@ -312,13 +311,13 @@ const addEmployee = () => {
         return ids;
     })
     .then (ids => {
-        Employee_db.showEmployees()
+        Employee_db.showEmployeesRolesManagers()
         .then (([data]) => {
             if (data) {
                 ids.employees = data.map(employee => ({
                     value: employee.id,
-                    name: employee.first_name + ' ' + employee.last_name
-                }));
+                    name: employee.first_name + ' ' + employee.last_name+ ', ' + employee.title
+                })).filter(employee => (employee.name.indexOf('Lead') > -1));
                 ids.employees.push({
                     value: 0,
                     name: 'No manager for this employee'
@@ -539,7 +538,9 @@ const promptUser = () => {
         } else if (`${answer.startQuestion}` === 'Delete an Employee') {
             deleteEmployee()
         } else if (`${answer.startQuestion}` === 'Exit Employee Tracker') {
+            console.log('\n_______________________________________________');
             console.log('\nThank you for using Employee Tracker! Goodbye.\n');
+            console.log('_______________________________________________\n');
             Employee_db.connection.end();
             return;
         }
@@ -557,6 +558,3 @@ const start = () => {
 }
 
 start()
-    // .catch(err => {
-    //     console.log(err);
-    // });
