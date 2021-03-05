@@ -197,7 +197,6 @@ const deleteEmployeeQuestion = (employees) => {
     )
 }
 
-
 const viewDepartments = () => {
     Employee_db.showDepartments()
     .then (([data]) => {
@@ -246,14 +245,13 @@ const viewEmployeesByDepartment = () => {
         return employeeByDeptQuestions(departments)
     })
     .then(answers => { 
-        console.log("answers", answers)
         Employee_db.showDepartmentEmployees(parseInt(answers.department))
         .then (([data]) => {
             const departmentEmployees = data;
             console.log('\n')
             console.table(departmentEmployees);
             console.log('\n')
-        })   
+        })  
    })
    .then ( () => {
        promptUser()
@@ -320,7 +318,6 @@ const addEmployee = () => {
             return addEmployeeQuestions(ids)
         })
         .then(answers => { 
-            console.log(answers)
             Employee_db.addEmployee(answers.firstName, answers.lastName, parseInt(answers.role), parseInt(answers.manager))
             console.log('\n\nThe new employee: ' + `${answers.firstName}` + ' ' + `${answers.lastName}` + ' has been added \n');
        })
@@ -367,6 +364,7 @@ const updateEmployeeRole = () => {
 };
 
 const updateEmployeeManager = () => {
+    const employee = [];
     Employee_db.showEmployees()
     .then (([data]) => {
         let ids = [];
@@ -394,12 +392,6 @@ const updateEmployeeManager = () => {
                     name: 'employee',
                     message: "Please choose the employee you would like to update:",
                     choices: ids.employees,
-                    // filter: (employeeData) => {
-                    //     temp = "Goodbye World";
-                    //     console.log("In HERE", temp)
-                    //     console.log("In HERE", employeeData)
-                    //     return employeeData;
-                    // },
                 },
                 {
                     type: 'list',
@@ -493,8 +485,10 @@ const deleteEmployee = () => {
 
 
 const promptUser = () => {
+    console.log('\n')
     return prompt(startQuestion)
     .then(answer => { 
+        console.clear()
         if (`${answer.startQuestion}` === 'View All Departments') {
             viewDepartments()
         } else if (`${answer.startQuestion}` === 'View All Roles') {
@@ -525,27 +519,19 @@ const promptUser = () => {
             return;
         }
     })
-};
-
-promptUser()
     .catch(err => {
         console.log(err);
     });
+};
 
+const start = () => {
+    console.log('____________________________\n')
+    console.log('WELCOME TO EMPLOYEE TRACKER!')
+    console.log('____________________________')
+    promptUser()
+}
 
-
-
-
-// promptManager()
-//     .then(team => {
-//         return buildTeam(team);
-//     })
-//     .then(fullTeam => {
-//         return generateHTML(fullTeam);
-//     })
-//     .then(pageContent => {
-//         return writeFile('./dist/index.html', pageContent);
-//     })
-//     .catch(err => {
-//         console.log(err);
-//     });/
+start()
+    // .catch(err => {
+    //     console.log(err);
+    // });

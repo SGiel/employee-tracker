@@ -43,7 +43,7 @@ class employee_db {
 
     showEmployeesRolesManagers() {
         return this.connection.promise().query(
-            `SELECT employees.id, first_name, last_name, title, name as department, salary
+            `SELECT employees.id, first_name, last_name, title, name as department, salary, manager_id
             FROM employees 
             LEFT JOIN roles ON employees.role_id = roles.id
             LEFT JOIN departments  ON roles.department_id = departments.id`
@@ -166,7 +166,7 @@ class employee_db {
     // updates an Employees role
     updateEmployeeManager(employee_id, managerID) {
         let manager_id;
-        if (!managerID === 0) {
+        if (!(managerID === 0)) {
             manager_id = managerID
         }
         return this.connection.promise().query(
