@@ -1,6 +1,7 @@
 const Employee_db = require('./db/');
 const {prompt} = require('inquirer');
 const {table} = require('table');
+const cTable = require('console.table')
 
 const startQuestion = [
     {
@@ -350,7 +351,13 @@ const updateEmployeeManager = () => {
                     type: 'list',
                     name: 'employee',
                     message: "Please choose the employee you would like to update:",
-                    choices: ids.employees
+                    choices: ids.employees,
+                    // filter: (employeeData) => {
+                    //     temp = "Goodbye World";
+                    //     console.log("In HERE", temp)
+                    //     console.log("In HERE", employeeData)
+                    //     return employeeData;
+                    // },
                 },
                 {
                     type: 'list',
@@ -362,7 +369,6 @@ const updateEmployeeManager = () => {
         )
     })
     .then(answers => { 
-        console.log(answers)
         Employee_db.updateEmployeeManager(parseInt(answers.employee), parseInt(answers.manager))
         console.log('\n\nThe employee manager is updated \n');
     })
