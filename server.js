@@ -1,7 +1,8 @@
 const Employee_db = require('./db/');
 const {prompt} = require('inquirer');
 const {table} = require('table');
-const cTable = require('console.table')
+const cTable = require('console.table');
+const inquirer = require('inquirer');
 
 const startQuestion = [
     {
@@ -23,7 +24,7 @@ const startQuestion = [
             'Exit Employee Tracker']
     }
 ];
-// HOW VALIDATE THAT THE DEPARTMENT NAME DOESN'T ALREADY EXIST???
+
 const addDepartmentQuestion = [
     {
         type: 'input',
@@ -40,23 +41,170 @@ const addDepartmentQuestion = [
     }
 ]
 
+const employeeByDeptQuestions = (departmentsArray) => {
+    
+    let departments = departmentsArray;
+    return prompt([
+        {
+            type: 'list',
+            name: 'department',
+            message: "Please choose the department where you would like to view employees:",
+            choices: departments.map(department => ({value: department.id, name: department.department}))
+        }
+    ])
+}
+
+const addRoleQuestions = (departmentsArray) => {
+    let departments = departmentsArray;
+    return prompt(
+        [
+            {
+                type: 'input',
+                name: 'roleName',
+                message: 'Please enter a new role:',
+                validate: nameInput => {
+                    if (nameInput) {
+                      return true;
+                    } else {
+                      console.log("Please enter a role.");
+                      return false;
+                    }
+                },
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: 'Please enter the salary for the role:',
+                validate: idInput => {
+                    if (idInput.match(/^[0-9]+$/) && idInput.length > 0) {
+                        return true;
+                    } else {
+                        console.log("Invalid entry. Please enter the salary with no commas, $ or other non-numeric characters.");
+                        return false;
+                    }
+                }
+            },
+            {
+                type: 'list',
+                name: 'department',
+                message: 'Please choose the department for the role:',
+                choices: departments.map(department => ({value: department.id, name: department.department}))
+            }
+        ]
+    )
+}
+
+addEmployeeQuestions = (ids) => {
+    return prompt(
+        [
+            {
+                type: 'input',
+                name: 'firstName',
+                message: 'First name:',
+                validate: nameInput => {
+                    if (nameInput) {
+                      return true;
+                    } else {
+                      console.log("Please enter the first name:");
+                      return false;
+                    }
+                },
+            },
+            {
+                type: 'input',
+                name: 'lastName',
+                message: 'Last name:',
+                validate: nameInput => {
+                    if (nameInput) {
+                      return true;
+                    } else {
+                      console.log("Please enter the last name:");
+                      return false;
+                    }
+                },
+            },
+            {
+                type: 'list',
+                name: 'role',
+                message: 'Please choose the role for the employee:',
+                choices: ids.roles
+            },
+            {
+                type: 'list',
+                name: 'manager',
+                message: "Please choose the manager for this employee:",
+                choices: ids.employees
+            }
+        ]
+    )
+}
+
+const updateEmployeeRoleQuestions = (ids) => {
+    return prompt(
+        [
+            {
+                type: 'list',
+                name: 'employee',
+                message: "Please choose the employee you would like to update:",
+                choices: ids.employees
+            },
+            {
+                type: 'list',
+                name: 'role',
+                message: "Please choose the role for the employee:",
+                choices: ids.roles
+            }
+        ]
+    )
+}
+
+const deleteDepartmentQuestion = (departments) => {
+    return prompt(
+        [
+            {
+                type: 'list',
+                name: 'department',
+                message: "Please choose the department you would like to delete:",
+                choices: departments
+            }
+        ]
+    )
+}
+
+const deleteRoleQuestion = (roles) => {
+    return prompt(
+        [
+            {
+                type: 'list',
+                name: 'role',
+                message: "Please choose the role you would like to delete:",
+                choices: roles
+            }
+        ]
+    )
+}
+
+const deleteEmployeeQuestion = (employees) => {
+    return prompt(
+        [
+            {
+                type: 'list',
+                name: 'employee',
+                message: "Please choose the employee you would like to delete:",
+                choices: employees
+            }
+        ]
+    )
+}
+
+
 const viewDepartments = () => {
     Employee_db.showDepartments()
     .then (([data]) => {
-        // const departments = []
-        // departments.id= data.map(data => data.id)
-        // departments.name = data.map(data => data.name)
         const departments = data;
         console.log('\n');
         console.table(departments);
         console.log('\n')
-        //const transformed = test.reduce((acc, {id, ...x}) => { acc[id] = x; return acc}, {})
-        //console.table(transformed)
-        //let output = table(departments, config)
-        //console.log(output);
-        // const departments = data.map(department => department.name)
-        // console.log('\n\nThe Departments\n');
-        // departments.forEach(department => console.log(department));
     })
     .then ( () => {
         promptUser()
@@ -70,9 +218,6 @@ const viewRoles = () => {
         console.log(`\n`)
         console.table(roles);
         console.log('\n')
-        // const roles = data.map(role => role.title)
-        // console.log('\n\nThe Roles\n');
-        // roles.forEach(role => console.log(role));
     })
     .then ( () => {
         promptUser()
@@ -83,9 +228,6 @@ const viewEmployees = () => {
     Employee_db.showEmployeesRolesManagers()
     .then (([data]) => {
         const employees = data;
-        // const employees = data.map(employee => employee.first_name + ' ' + employee.last_name)
-        // console.log('\n\nThe Employees\n');
-        // employees.forEach(employee => console.log(employee));
         console.log('\n')
         console.table(employees)
         console.log('\n')
@@ -100,17 +242,8 @@ const viewEmployeesByDepartment = () => {
         const departments = data;
         return departments;
     })
-    .then ( (departments) => {
-        return prompt(
-            [
-                {
-                    type: 'list',
-                    name: 'department',
-                    message: "Please choose the department where you would like to view employees:",
-                    choices: departments.map(department => ({value: department.id, name: department.department}))
-                }
-            ] 
-        )
+    .then (departments => {
+        return employeeByDeptQuestions(departments)
     })
     .then(answers => { 
         console.log("answers", answers)
@@ -144,43 +277,8 @@ const addRole = () => {
         const departments = data;
         return departments;
     })
-    .then ( (departments) => {
-        return prompt(
-            [
-                {
-                    type: 'input',
-                    name: 'roleName',
-                    message: 'Please enter a new role:',
-                    validate: nameInput => {
-                        if (nameInput) {
-                          return true;
-                        } else {
-                          console.log("Please enter a role.");
-                          return false;
-                        }
-                    },
-                },
-                {
-                    type: 'input',
-                    name: 'salary',
-                    message: 'Please enter the salary for the role:',
-                    validate: idInput => {
-                        if (idInput.match(/^[0-9]+$/) && idInput.length > 0) {
-                            return true;
-                        } else {
-                            console.log("Invalid entry. Please enter the salary with no commas, $ or other non-numeric characters.");
-                            return false;
-                        }
-                    }
-                },
-                {
-                    type: 'list',
-                    name: 'department',
-                    message: 'Please choose the department for the role:',
-                    choices: departments.map(department => ({value: department.id, name: department.department}))
-                }
-            ]
-        )
+    .then (departments =>{
+        return addRoleQuestions(departments);
     })
     .then(answers => { 
          Employee_db.addRole(answers.roleName, parseInt(answers.salary), parseInt(answers.department))
@@ -219,48 +317,7 @@ const addEmployee = () => {
             return ids;
         })
         .then (ids => {
-            return prompt(
-                [
-                    {
-                        type: 'input',
-                        name: 'firstName',
-                        message: 'First name:',
-                        validate: nameInput => {
-                            if (nameInput) {
-                              return true;
-                            } else {
-                              console.log("Please enter the first name:");
-                              return false;
-                            }
-                        },
-                    },
-                    {
-                        type: 'input',
-                        name: 'lastName',
-                        message: 'Last name:',
-                        validate: nameInput => {
-                            if (nameInput) {
-                              return true;
-                            } else {
-                              console.log("Please enter the last name:");
-                              return false;
-                            }
-                        },
-                    },
-                    {
-                        type: 'list',
-                        name: 'role',
-                        message: 'Please choose the role for the employee:',
-                        choices: ids.roles
-                    },
-                    {
-                        type: 'list',
-                        name: 'manager',
-                        message: "Please choose the manager for this employee:",
-                        choices: ids.employees
-                    }
-                ]
-            )
+            return addEmployeeQuestions(ids)
         })
         .then(answers => { 
             console.log(answers)
@@ -297,22 +354,7 @@ const updateEmployeeRole = () => {
             return ids;
         })
         .then (ids => {
-            return prompt(
-                [
-                    {
-                        type: 'list',
-                        name: 'employee',
-                        message: "Please choose the employee you would like to update:",
-                        choices: ids.employees
-                    },
-                    {
-                        type: 'list',
-                        name: 'role',
-                        message: "Please choose the role for the employee:",
-                        choices: ids.roles
-                    }
-                ]
-            )
+            return updateEmployeeRoleQuestions(ids)
         })
         .then(answers => { 
             Employee_db.updateEmployeeRole(parseInt(answers.employee), parseInt(answers.role))
@@ -390,16 +432,7 @@ const deleteDepartment = () => {
         return departmentArray;
     })
     .then (departments => {
-        return prompt(
-            [
-                {
-                    type: 'list',
-                    name: 'department',
-                    message: "Please choose the department you would like to delete:",
-                    choices: departments
-                }
-            ]
-        )
+        return deleteDepartmentQuestion(departments)
     })
     .then(answers => { 
         Employee_db.deleteDepartment(parseInt(answers.department))
@@ -423,16 +456,7 @@ const deleteRole = () => {
         return roleArray;
     })
     .then (roles => {
-        return prompt(
-            [
-                {
-                    type: 'list',
-                    name: 'role',
-                    message: "Please choose the role you would like to delete:",
-                    choices: roles
-                }
-            ]
-        )
+        return deleteRoleQuestion(roles)
     })
     .then(answers => { 
         Employee_db.deleteRole(parseInt(answers.role))
@@ -456,16 +480,7 @@ const deleteEmployee = () => {
         return employeeArray;
     })
     .then (employees => {
-        return prompt(
-            [
-                {
-                    type: 'list',
-                    name: 'employee',
-                    message: "Please choose the employee you would like to delete:",
-                    choices: employees
-                }
-            ]
-        )
+        return deleteEmployeeQuestion(employees)
     })
     .then(answers => { 
         Employee_db.deleteEmployee(parseInt(answers.employee))
