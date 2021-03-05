@@ -43,10 +43,12 @@ class employee_db {
 
     showEmployeesRolesManagers() {
         return this.connection.promise().query(
-            `SELECT employees.id, first_name, last_name, title, name as department, salary, manager_id
+            `SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.name as department, 
+            roles.salary, CONCAT(e.first_name, ' ', e.last_name) AS manager, employees.manager_id
             FROM employees 
             LEFT JOIN roles ON employees.role_id = roles.id
-            LEFT JOIN departments  ON roles.department_id = departments.id`
+            LEFT JOIN departments  ON roles.department_id = departments.id
+            LEFT JOIN employees AS e ON employees.manager_id = e.id`
         )
     }
 

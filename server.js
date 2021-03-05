@@ -226,7 +226,16 @@ const viewRoles = () => {
 const viewEmployees = () => {
     Employee_db.showEmployeesRolesManagers()
     .then (([data]) => {
-        const employees = data;
+        // below removes manager_id from the employees object
+        const employees = data.map(employee => ({
+            id: employee.id,
+            first_name: employee.first_name,
+            last_name: employee.last_name,
+            title: employee.title,
+            department: employee.department,
+            salary: employee.salary,
+            manager: employee.manager
+        }))
         console.log('\n')
         console.table(employees)
         console.log('\n')
@@ -241,6 +250,7 @@ const viewEmployeesByDepartment = () => {
         const departments = data;
         return departments;
     })
+
     .then (departments => {
         return employeeByDeptQuestions(departments)
     })
@@ -251,10 +261,12 @@ const viewEmployeesByDepartment = () => {
             console.log('\n')
             console.table(departmentEmployees);
             console.log('\n')
+            return
         })  
-   })
-   .then ( () => {
-       promptUser()
+        .then ( () => {
+            console.clear()
+            promptUser()
+        })
    })
 };
 
@@ -364,8 +376,8 @@ const updateEmployeeRole = () => {
 };
 
 const updateEmployeeManager = () => {
-    const employee = [];
-    Employee_db.showEmployees()
+    let id = []
+    Employee_db.showEmployeesRolesManagers()
     .then (([data]) => {
         let ids = [];
         if (data) {
@@ -375,8 +387,8 @@ const updateEmployeeManager = () => {
             }));
             ids.managers = data.map(manager => ({
                 value: manager.id,
-                name: manager.first_name + ' ' + manager.last_name
-            }));
+                name: manager.first_name + ' ' + manager.last_name + ', ' + manager.title
+            })).filter(manager => (manager.name.indexOf('Lead') > -1))
             ids.managers.push({
                 value: 0,
                 name: 'No manager for this employee'
@@ -392,23 +404,36 @@ const updateEmployeeManager = () => {
                     name: 'employee',
                     message: "Please choose the employee you would like to update:",
                     choices: ids.employees,
-                },
-                {
-                    type: 'list',
-                    name: 'manager',
-                    message: "Please choose the manager for the employee:",
-                    choices: ids.managers
                 }
             ]
         )
+        .then (employeeAnswer => {
+            id.employee = employeeAnswer;
+            return prompt (
+                [
+                    {
+                        type: 'list',
+                        name: 'manager',
+                        message: "Please choose the manager for the employee:",
+                        choices: ids.managers.filter(manager => id.employee.employee !== manager.value)
+                    }
+                ]
+            )
+            .then (managerAnswer => {
+                id.manager = managerAnswer;
+                console.log("managaerAnswer", id)
+                return;
+            })
+        })
     })
-    .then(answers => { 
-        Employee_db.updateEmployeeManager(parseInt(answers.employee), parseInt(answers.manager))
+    .then ( () => {
+        Employee_db.updateEmployeeManager(parseInt(id.employee.employee), parseInt(id.manager.manager))
         console.log('\n\nThe employee manager is updated \n');
     })
     .then ( () => {
         promptUser()
     })
+
 };
 
 const deleteDepartment = () => {
