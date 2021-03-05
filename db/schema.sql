@@ -38,3 +38,10 @@ CREATE TABLE employees (
         ON UPDATE CASCADE 
         ON DELETE SET NULL
 );
+
+    -- CONSTRAINT fk_manager
+    --     FOREIGN KEY (manager_id)
+    --     REFERENCES (id)
+    --     ON UPDATE CASCADE
+    --     ON DELETE SET NULL
+

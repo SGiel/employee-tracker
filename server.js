@@ -1,5 +1,6 @@
 const Employee_db = require('./db/');
 const {prompt} = require('inquirer');
+const {table} = require('table');
 
 const startQuestion = [
     {
@@ -13,6 +14,7 @@ const startQuestion = [
             'Add a Role',
             'Add an Employee',
             'Update an Employee Role',
+            'Delete an Employee',
             'Exit Employee Tracker']
     }
 ];
@@ -64,10 +66,7 @@ const addRoleQuestions = [
         type: 'list',
         name: 'department',
         message: 'Please choose the department for the role:',
-        choices: ['Sales',
-            'Engineering',
-            'Finance',
-            'Legal']
+        choices: ['department1', 'department2']
     }
 ];
 
@@ -143,23 +142,33 @@ const updateEmployeeRoleQuestions = [
         type: 'list',
         name: 'role',
         message: 'Please choose the new role for the employee:',
-        choices: ['Sales Lead',
+        choices: `[['Sales Lead',
             'Sales Person',
             'Lead Engineer',
             'Software Engineer',
             'Accountant',
             'Legal Team Lead',
-            'Lawyer']
+            'Lawyer']]`
     }
 ];
 
 const viewDepartments = () => {
     Employee_db.showDepartments()
     .then (([data]) => {
-        const departments = data.map(department => department.name)
-        console.log('\n\nThe Departments\n');
-        departments.forEach(department => console.log(department));
+        // const departments = []
+        // departments.id= data.map(data => data.id)
+        // departments.name = data.map(data => data.name)
+        const departments = data;
+        console.log('\n');
+        console.table(departments);
         console.log('\n')
+        //const transformed = test.reduce((acc, {id, ...x}) => { acc[id] = x; return acc}, {})
+        //console.table(transformed)
+        //let output = table(departments, config)
+        //console.log(output);
+        // const departments = data.map(department => department.name)
+        // console.log('\n\nThe Departments\n');
+        // departments.forEach(department => console.log(department));
     })
     .then ( () => {
         promptUser()
@@ -167,12 +176,15 @@ const viewDepartments = () => {
 }
 
 const viewRoles = () => {
-    Employee_db.showRoles()
+    Employee_db.showRolesDepartments()
     .then (([data]) => {
-        const roles = data.map(role => role.title)
-        console.log('\n\nThe Roles\n');
-        roles.forEach(role => console.log(role));
+        const roles = data;
+        console.log(`\n`)
+        console.table(roles);
         console.log('\n')
+        // const roles = data.map(role => role.title)
+        // console.log('\n\nThe Roles\n');
+        // roles.forEach(role => console.log(role));
     })
     .then ( () => {
         promptUser()
@@ -180,11 +192,14 @@ const viewRoles = () => {
 }
 
 const viewEmployees = () => {
-    Employee_db.showEmployees()
+    Employee_db.showEmployeesRolesManagers()
     .then (([data]) => {
-        const employees = data.map(employee => employee.first_name + ' ' + employee.last_name)
-        console.log('\n\nThe Employees\n');
-        employees.forEach(employee => console.log(employee));
+        const employees = data;
+        // const employees = data.map(employee => employee.first_name + ' ' + employee.last_name)
+        // console.log('\n\nThe Employees\n');
+        // employees.forEach(employee => console.log(employee));
+        console.log('\n')
+        console.table(employees)
         console.log('\n')
     })
     .then ( () => {
@@ -195,7 +210,6 @@ const viewEmployees = () => {
 const addDepartment = () => {
     return prompt(addDepartmentQuestion)
     .then((res) => { 
-        console.log(res.departmentName)
         Employee_db.addDepartment(res.departmentName)
         console.log('\n\nThe new Department: ' + `${res.departmentName}` + ' has been added\n');
     })
@@ -204,61 +218,225 @@ const addDepartment = () => {
     })
 };
 
-const addEmployee = () => {
-    return prompt(addEmployeeQuestions)
-    .then(answer => { 
-        console.log("in addEmployees", answer)
-        promptUser()
-        return; // will need to actually return new employees array
-
-        // if (`${answer.id}` === "???") {
-        //     return prompt(engineerQuestions)
-        //     //promptEngineer()
-        //         .then(EngineerAnswers => {
-        //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
-        //             return buildTeam(team)
-        //         })
-    })
-};
-
 const addRole = () => {
-    return prompt(addRoleQuestions)
-    .then(answer => { 
-        console.log("in addRole", answer)
+    Employee_db.showDepartments()
+    .then (([data]) => {
+        const departments = data;
+        return departments;
+    })
+    .then ( (departments) => {
+        return prompt(
+            [
+                {
+                    type: 'input',
+                    name: 'roleName',
+                    message: 'Please enter a new role:',
+                    validate: nameInput => {
+                        if (nameInput) {
+                          return true;
+                        } else {
+                          console.log("Please enter a role.");
+                          return false;
+                        }
+                    },
+                },
+                {
+                    type: 'input',
+                    name: 'salary',
+                    message: 'Please enter the salary for the role:',
+                    validate: idInput => {
+                        if (idInput.match(/^[0-9]+$/) && idInput.length > 0) {
+                            return true;
+                        } else {
+                            console.log("Invalid entry. Please enter the salary with no commas, $ or other non-numeric characters.");
+                            return false;
+                        }
+                    }
+                },
+                {
+                    type: 'list',
+                    name: 'department',
+                    message: 'Please choose the department for the role:',
+                    choices: departments.map(department => ({value: department.id, name: department.department}))
+                }
+            ]
+        )
+    })
+    .then(answers => { 
+         console.log(answers.roleName, parseInt(answers.salary), parseInt(answers.department))
+         Employee_db.addRole(answers.roleName, parseInt(answers.salary), parseInt(answers.department))
+         console.log('\n\nThe new role: ' + `${answers.roleName}` + ' has been added \n');
+    })
+    .then ( () => {
         promptUser()
-        return; // will need to actually return new roles array
-        // change the role_id on the employee provided by employee id???
-
-        // if (`${answer.id}` === "???") {
-        //     return prompt(engineerQuestions)
-        //     //promptEngineer()
-        //         .then(EngineerAnswers => {
-        //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
-        //             return buildTeam(team)
-        //         })
     })
 };
 
+const addEmployee = () => {
+    const ids = [];
+    Employee_db.showRoles()
+    .then (([data]) => {
+        if (data) {
+            ids.roles = data.map(role => ({
+                value: role.id,
+                name: role.title
+            }));
+        }
+        return ids;
+    })
+    .then (ids => {
+        Employee_db.showEmployees()
+        .then (([data]) => {
+            if (data) {
+                ids.employees = data.map(employee => ({
+                    value: employee.id,
+                    name: employee.first_name + ' ' + employee.last_name
+                }));
+                ids.employees.push({
+                    value: 0,
+                    name: 'No manager for this employee'
+                })
+            }
+            return ids;
+        })
+        .then (ids => {
+            return prompt(
+                [
+                    {
+                        type: 'input',
+                        name: 'firstName',
+                        message: 'First name:',
+                        validate: nameInput => {
+                            if (nameInput) {
+                              return true;
+                            } else {
+                              console.log("Please enter the first name:");
+                              return false;
+                            }
+                        },
+                    },
+                    {
+                        type: 'input',
+                        name: 'lastName',
+                        message: 'Last name:',
+                        validate: nameInput => {
+                            if (nameInput) {
+                              return true;
+                            } else {
+                              console.log("Please enter the last name:");
+                              return false;
+                            }
+                        },
+                    },
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: 'Please choose the role for the employee:',
+                        choices: ids.roles
+                    },
+                    {
+                        type: 'list',
+                        name: 'manager',
+                        message: "Please choose the manager for this employee:",
+                        choices: ids.employees
+                    }
+                ]
+            )
+        })
+        .then(answers => { 
+            console.log(answers)
+            Employee_db.addEmployee(answers.firstName, answers.lastName, parseInt(answers.role), parseInt(answers.manager))
+            console.log('\n\nThe new employee: ' + `${answers.firstName}` + ' ' + `${answers.lastName}` + ' has been added \n');
+       })
+       .then ( () => {
+          promptUser()
+       })
+    })
+};
 
 const updateEmployeeRole = () => {
-    return inquirer.prompt(updateEmployeeRoleQuestions)
-    .then(answer => { 
-        console.log("in updateEmployeeRole", answer)
-        promptUser()
-        return; // will need to actually return updated employee info
-        // change the role_id on the employee provided by employee id???
-
-        // if (`${answer.id}` === "???") {
-        //     return prompt(engineerQuestions)
-        //     //promptEngineer()
-        //         .then(EngineerAnswers => {
-        //             team.push(new Engineer(`${EngineerAnswers.employeeName}`, `${EngineerAnswers.id}`, `${EngineerAnswers.email}`, `${EngineerAnswers.github}`));
-        //             return buildTeam(team)
-        //         })
-        
+    const ids = [];
+    Employee_db.showEmployees()
+    .then (([data]) => {
+        if (data) {
+            ids.employees = data.map(employee => ({
+                value: employee.id,
+                name: employee.first_name + ' ' + employee.last_name
+            }));
+        }
+        return ids;
+    })
+    .then (ids => {
+        Employee_db.showRoles()
+        .then (([data]) => {
+            if (data) {
+                ids.roles = data.map(role => ({
+                    value: role.id,
+                    name: role.title
+                }));
+            }
+            return ids;
+        })
+        .then (ids => {
+            return prompt(
+                [
+                    {
+                        type: 'list',
+                        name: 'employee',
+                        message: "Please choose the employee you would like to update:",
+                        choices: ids.employees
+                    },
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: "Please choose the role for the employee:",
+                        choices: ids.roles
+                    }
+                ]
+            )
+        })
+        .then(answers => { 
+            Employee_db.updateEmployee(parseInt(answers.employee), parseInt(answers.role))
+            console.log('\n\nThe employee role is updated \n');
+       })
+       .then ( () => {
+          promptUser()
+        })
     })
 };
 
+const deleteEmployee = () => {
+    Employee_db.showEmployees()
+    .then (([data]) => {
+        let employeeArray = [];
+        if (data) {
+            employeeArray = data.map(employee => ({
+                value: employee.id,
+                name: employee.first_name + ' ' + employee.last_name
+            }));
+        }
+        return employeeArray;
+    })
+    .then (employees => {
+        return prompt(
+            [
+                {
+                    type: 'list',
+                    name: 'employee',
+                    message: "Please choose the employee you would like to delete:",
+                    choices: employees
+                }
+            ]
+        )
+    })
+    .then(answers => { 
+        Employee_db.deleteEmployee(parseInt(answers.employee))
+        console.log('\n\nThe employee has been deleted. \n');
+    })
+    .then ( () => {
+        promptUser()
+    })
+};
 
 
 const promptUser = () => {
@@ -273,14 +451,13 @@ const promptUser = () => {
         } else if (`${answer.startQuestion}` === 'Add a Department') {
             addDepartment()
         } else if (`${answer.startQuestion}` === 'Add a Role') {
-            console.log('will add a Role here');
             addRole()
         } else if (`${answer.startQuestion}` === 'Add an Employee') {
-            console.log('will add an Employee here');
             addEmployee()
         } else if (`${answer.startQuestion}` === 'Update an Employee Role') {
-            console.log('will updata an Employee Role here');
             updateEmployeeRole()
+        } else if (`${answer.startQuestion}` === 'Delete an Employee') {
+            deleteEmployee()
         } else if (`${answer.startQuestion}` === 'Exit Employee Tracker') {
             console.log('\nThank you for using Employee Tracker! Goodbye.\n');
             Employee_db.connection.end();
