@@ -14,7 +14,7 @@
 
 ![Screenshot of Employee Tracker initial welcome](./assets/images/welcome-screen-shot.png)
 
-![Screenshot of Employee Tracker employee list](./assets/images/employee-list-screen-shot.png)
+![Screenshot of Employee Tracker employee list](./assets/images/employees-list-screen-shot.png)
 
 ## Usage
   [Link to Employee Tracker application walk-through video](https://drive.google.com/file/d/1pU4vjhVSz6vKKv4JV9lb5QJKZwZ5xIQC/view) 
